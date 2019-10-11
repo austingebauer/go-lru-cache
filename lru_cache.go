@@ -18,7 +18,7 @@ type LRUNode struct {
 	value int
 }
 
-func New(capacity int) LRUCache {
+func NewCache(capacity int) LRUCache {
 	return LRUCache{
 		capacity: capacity,
 		keyMap:   make(map[int]*LRUNode),

@@ -6,7 +6,7 @@ import (
 )
 
 func TestLRUCache_1(t *testing.T) {
-	cache := New(2)
+	cache := NewCache(2)
 	cache.Put(1, 1)
 	cache.Put(2, 2)
 	assert.Equal(t, 1, cache.Get(1)) // returns 1
@@ -21,7 +21,7 @@ func TestLRUCache_1(t *testing.T) {
 }
 
 func TestLRUCache_2(t *testing.T) {
-	cache := New(1)
+	cache := NewCache(1)
 	cache.Put(2, 1)
 	assert.Equal(t, 1, cache.Get(2))
 }
@@ -31,7 +31,7 @@ func TestLRUCache_2(t *testing.T) {
 [[1],[2,1],[2],[3,2],[2],[3]]
 */
 func TestLRUCache_3(t *testing.T) {
-	cache := New(1)
+	cache := NewCache(1)
 	cache.Put(2, 1)
 	assert.Equal(t, 1, cache.Get(2))
 
@@ -45,7 +45,7 @@ func TestLRUCache_3(t *testing.T) {
 [[2],[2,1],[2,2],[2],[1,1],[4,1],[2]]
 */
 func TestLRUCache_4(t *testing.T) {
-	cache := New(2)
+	cache := NewCache(2)
 	cache.Put(2, 1)
 	cache.Put(2, 2)
 	assert.Equal(t, 2, cache.Get(2))
@@ -58,7 +58,7 @@ Output:   [null,null,null,null,null,1,-1]
 Expected: [null,null,null,null,null,-1,3]
 */
 func TestLRUCache_5(t *testing.T) {
-	cache := New(2)
+	cache := NewCache(2)
 	cache.Put(2, 1)
 	cache.Put(1, 1)
 	cache.Put(2, 3) // evict 2->1
@@ -76,7 +76,7 @@ Output:   [null,null,null,null,null,1,-1]
 Expected: [null,null,null,null,null,-1,3]
 */
 func TestLRUCache_6(t *testing.T) {
-	cache := New(2)
+	cache := NewCache(2)
 	cache.Put(2, 1)
 	cache.Put(2, 2)
 	assert.Equal(t, 2, cache.Get(2))
@@ -90,7 +90,7 @@ func TestLRUCache_6(t *testing.T) {
 [[2],[2],[2,6],[1],[1,5],[1,2],[1],[2]]
 */
 func TestLRUCache_7(t *testing.T) {
-	cache := New(2)
+	cache := NewCache(2)
 	assert.Equal(t, -1, cache.Get(2))
 	cache.Put(2, 6)
 	assert.Equal(t, -1, cache.Get(1))
@@ -107,7 +107,7 @@ Output: [null,null,null,null,null,4,3,2,-1,null,-1,2,-1,4,5]
 Expected: [null,null,null,null,null,4,3,2,-1,null,-1,2,3,-1,5]
 */
 func TestLRUCache_8(t *testing.T) {
-	cache := New(3)
+	cache := NewCache(3)
 	cache.Put(1, 1)
 	cache.Put(2, 2)
 	cache.Put(3, 3)
