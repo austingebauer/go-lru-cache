@@ -29,8 +29,6 @@ It provides a `Get()` function that allows you to retrieve values given a key.
 Please refer to the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for additional API 
 documentation of the library.
 
-### Example
-
 ```go
 cache := lru.NewLRUCache(2)
 
