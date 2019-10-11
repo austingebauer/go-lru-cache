@@ -18,7 +18,7 @@ import "github.com/austingebauer/go-lru-cache"
 
 ## Usage
 
-#### API
+### API
 
 go-lru-cache has a simple API.
 
@@ -28,14 +28,14 @@ It provides a `Get()` function that allows you to retrieve values given a key.
 
 Please refer to the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for additional API documentation of the library.
 
-#### Behavior
+### Behavior
 
 go-lru-cache will begin to evict the least recently used key/value pair when it has reached
 its given capacity.
 
 Calls to both `Get()` and `Put()` count as usage of a given key/value pair. 
 
-#### Example
+### Example
 
 ```go
 cache := lru.NewLRUCache(2)
