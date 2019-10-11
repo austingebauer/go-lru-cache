@@ -26,14 +26,8 @@ It provides a `Put()` function that allows you to place key/value pairs into the
 
 It provides a `Get()` function that allows you to retrieve values given a key.
 
-Please refer to the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for additional API documentation of the library.
-
-### Behavior
-
-go-lru-cache will begin to evict the least recently used key/value pair when it has reached
-its given capacity.
-
-Calls to both `Get()` and `Put()` count as usage of a given key/value pair. 
+Please refer to the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for additional API 
+documentation of the library.
 
 ### Example
 
@@ -50,6 +44,13 @@ cache.Get(1)       // returns -1 (not found)
 cache.Get(3)       // returns 4
 cache.Get(4)       // returns 5
 ```
+
+### Behavior
+
+go-lru-cache will begin to evict the least recently used key/value pair when it has reached
+its given capacity.
+
+Calls to both `Get()` and `Put()` count as usage of a given key/value pair. 
 
 ## Contributing
 
