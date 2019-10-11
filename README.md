@@ -30,7 +30,7 @@ Please refer to the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-ca
 documentation of the library.
 
 ```go
-cache := lru.NewLRUCache(2)
+cache := lru.New(2)
 
 cache.Put(1, 2)
 cache.Put(2, 3)
