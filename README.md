@@ -20,7 +20,7 @@ import "github.com/austingebauer/go-lru-cache"
 
 ### API
 
-go-lru-cache has a simple API.
+`go-lru-cache` has a simple API.
 
 It provides a `Put()` function that allows you to place key/value pairs into the cache.
 
@@ -45,7 +45,7 @@ cache.Get(4)       // returns 5
 
 ### Behavior
 
-go-lru-cache will begin to evict the least recently used key/value pair when it has reached
+`go-lru-cache` will begin to evict the least recently used key/value pair when it has reached
 its given capacity.
 
 Calls to both `Get()` and `Put()` count as usage of a given key/value pair. 
