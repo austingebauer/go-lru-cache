@@ -3,17 +3,17 @@ package lru
 type LRUCache struct {
 	capacity int
 	load     int
-	keyMap   map[int]*LRUNode
+	keyMap   map[int]*lruNode
 
 	// font is always the latest used
-	front *LRUNode
+	front *lruNode
 	// rear is always the least recently used (LRU)
-	rear *LRUNode
+	rear *lruNode
 }
 
-type LRUNode struct {
-	prev  *LRUNode
-	next  *LRUNode
+type lruNode struct {
+	prev  *lruNode
+	next  *lruNode
 	key   int
 	value int
 }
@@ -21,7 +21,7 @@ type LRUNode struct {
 func NewCache(capacity int) LRUCache {
 	return LRUCache{
 		capacity: capacity,
-		keyMap:   make(map[int]*LRUNode),
+		keyMap:   make(map[int]*lruNode),
 	}
 }
 
@@ -33,7 +33,7 @@ func (cache *LRUCache) Put(key int, value int) {
 		return
 	}
 
-	node := &LRUNode{
+	node := &lruNode{
 		key:   key,
 		value: value,
 	}
@@ -83,13 +83,13 @@ func (cache *LRUCache) Get(key int) int {
 	return node.value
 }
 
-func (cache *LRUCache) insertInFront(node *LRUNode) {
+func (cache *LRUCache) insertInFront(node *lruNode) {
 	cache.front.prev = node
 	node.next = cache.front
 	cache.front = node
 }
 
-func (cache *LRUCache) bringNodeToFront(node *LRUNode) {
+func (cache *LRUCache) bringNodeToFront(node *lruNode) {
 	if node == cache.front {
 		return
 	}
