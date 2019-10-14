@@ -1,5 +1,7 @@
+// package lru provides a thread-safe least recently used (LRU) cache with a fixed size.
 package lru
 
+// LRUCache is a thread-safe least recently used (LRU) cache with a fixed size.
 type LRUCache struct {
 	capacity int
 	load     int
@@ -11,6 +13,7 @@ type LRUCache struct {
 	rear *lruNode
 }
 
+// lruNode represents a single node in a doubly-linked list.
 type lruNode struct {
 	prev  *lruNode
 	next  *lruNode
@@ -18,6 +21,7 @@ type lruNode struct {
 	value int
 }
 
+// NewCache returns a new LRUCache with the given capacity.
 func NewCache(capacity int) LRUCache {
 	return LRUCache{
 		capacity: capacity,
@@ -25,6 +29,8 @@ func NewCache(capacity int) LRUCache {
 	}
 }
 
+// Put inserts a key/value pair into the cache.
+// If a value for the given key already exists in the cache, it will be overridden.
 func (cache *LRUCache) Put(key int, value int) {
 	existingNode, ok := cache.keyMap[key]
 	if ok {
@@ -68,6 +74,8 @@ func (cache *LRUCache) Put(key int, value int) {
 	cache.insertInFront(node)
 }
 
+// Get returns the value stored in the cache for the given key.
+// If there is no value cached for the given key, then -1 is returned.
 func (cache *LRUCache) Get(key int) int {
 	node, ok := cache.keyMap[key]
 	if !ok {
@@ -83,12 +91,16 @@ func (cache *LRUCache) Get(key int) int {
 	return node.value
 }
 
+// insertInFront inserts the passed node into the front of the list
+// used by the cache to track the usage of items in the cache.
 func (cache *LRUCache) insertInFront(node *lruNode) {
 	cache.front.prev = node
 	node.next = cache.front
 	cache.front = node
 }
 
+// bringNodeToFront brings a node in the list used by the cache to
+// track the usage of items in the cache to the front of the list.
 func (cache *LRUCache) bringNodeToFront(node *lruNode) {
 	if node == cache.front {
 		return
