@@ -5,87 +5,262 @@ import (
 	"testing"
 )
 
-func TestLRUCache_1(t *testing.T) {
-	cache := NewCache(2)
-	cache.Put(1, 1)
-	cache.Put(2, 2)
-	assert.Equal(t, 1, cache.Get(1))
-	cache.Put(3, 3)
-	assert.Equal(t, -1, cache.Get(2))
-	cache.Put(4, 4)
-	assert.Equal(t, -1, cache.Get(1))
-	assert.Equal(t, 3, cache.Get(3))
-	assert.Equal(t, 4, cache.Get(4))
+func TestNewCache(t *testing.T) {
+	type args struct {
+		capacity int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *LRUCache
+		wantErr bool
+	}{
+		{
+			name: "test construction of a new cache",
+			args: args{
+				capacity: 1,
+			},
+			want: &LRUCache{
+				capacity: 1,
+				load:     0,
+				keyMap:   make(map[int]*lruNode),
+				front:    nil,
+				rear:     nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "test construction of a new cache with capacity of 0",
+			args: args{
+				capacity: 0,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cache, err := NewCache(tt.args.capacity)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.Equal(t, tt.want, cache)
+			}
+		})
+	}
 }
 
-func TestLRUCache_2(t *testing.T) {
-	cache := NewCache(1)
-	cache.Put(2, 1)
-	assert.Equal(t, 1, cache.Get(2))
-}
+func TestLRUCache(t *testing.T) {
+	type args struct {
+		capacity int
+	}
 
-func TestLRUCache_3(t *testing.T) {
-	cache := NewCache(1)
-	cache.Put(2, 1)
-	assert.Equal(t, 1, cache.Get(2))
+	tests := []struct {
+		name       string
+		args       args
+		operations []string
+		opArgs     [][]int
+	}{
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 2,
+			},
+			operations: []string{
+				"Put",
+				"Get",
+			},
+			opArgs: [][]int{
+				{2, 1},
+				{2, 1},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 2,
+			},
+			operations: []string{
+				"Put",
+				"Put",
+				"Get",
+				"Put",
+				"Get",
+				"Put",
+				"Get",
+				"Get",
+				"Get",
+			},
+			opArgs: [][]int{
+				{1, 1},
+				{2, 2},
+				{1, 1},
+				{3, 3},
+				{2, -1},
+				{4, 5},
+				{1, -1},
+				{3, 3},
+				{4, 5},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 1,
+			},
+			operations: []string{
+				"Put",
+				"Get",
+				"Put",
+				"Get",
+				"Get",
+			},
+			opArgs: [][]int{
+				{2, 1},
+				{2, 1},
+				{3, 2},
+				{2, -1},
+				{3, 2},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 2,
+			},
+			operations: []string{
+				"Put",
+				"Put",
+				"Get",
+			},
+			opArgs: [][]int{
+				{2, 1},
+				{2, 2},
+				{2, 2},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 2,
+			},
+			operations: []string{
+				"Put",
+				"Put",
+				"Put",
+				"Put",
+				"Get",
+				"Get",
+			},
+			opArgs: [][]int{
+				{2, 1},
+				{1, 1},
+				{2, 3},
+				{4, 1},
+				{1, -1},
+				{2, 3},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 2,
+			},
+			operations: []string{
+				"Put",
+				"Put",
+				"Get",
+				"Put",
+				"Put",
+				"Get",
+			},
+			opArgs: [][]int{
+				{2, 1},
+				{2, 2},
+				{2, 2},
+				{1, 1},
+				{4, 1},
+				{2, -1},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 2,
+			},
+			operations: []string{
+				"Get",
+				"Put",
+				"Get",
+				"Put",
+				"Put",
+				"Get",
+				"Get",
+			},
+			opArgs: [][]int{
+				{2, -1},
+				{2, 6},
+				{1, -1},
+				{1, 5},
+				{1, 2}, // evicts 2->6
+				{1, 2},
+				{2, 6},
+			},
+		},
+		{
+			name: "puts and gets mixed for eviction",
+			args: args{
+				capacity: 3,
+			},
+			operations: []string{
+				"Put",
+				"Put",
+				"Put",
+				"Put",
+				"Get",
+				"Get",
+				"Get",
+				"Get",
+				"Put",
+				"Get",
+				"Get",
+				"Get",
+				"Get",
+				"Get",
+			},
+			opArgs: [][]int{
+				{1, 1},
+				{2, 2},
+				{3, 3},
+				{4, 4},
+				{4, 4},
+				{3, 3},
+				{2, 2},
+				{1, -1},
+				{5, 5},
+				{1, -1},
+				{2, 2},
+				{3, 3},
+				{4, -1},
+				{5, 5},
+			},
+		},
+	}
 
-	cache.Put(3, 2)
-	assert.Equal(t, -1, cache.Get(2))
-	assert.Equal(t, 2, cache.Get(3))
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cache, err := NewCache(tt.args.capacity)
+			assert.NoError(t, err)
+			assert.NotNil(t, cache)
 
-func TestLRUCache_4(t *testing.T) {
-	cache := NewCache(2)
-	cache.Put(2, 1)
-	cache.Put(2, 2)
-	assert.Equal(t, 2, cache.Get(2))
-}
-
-func TestLRUCache_5(t *testing.T) {
-	cache := NewCache(2)
-	cache.Put(2, 1)
-	cache.Put(1, 1)
-	cache.Put(2, 3)
-	cache.Put(4, 1)
-	assert.Equal(t, -1, cache.Get(1))
-	assert.Equal(t, 3, cache.Get(2))
-}
-
-func TestLRUCache_6(t *testing.T) {
-	cache := NewCache(2)
-	cache.Put(2, 1)
-	cache.Put(2, 2)
-	assert.Equal(t, 2, cache.Get(2))
-	cache.Put(1, 1)
-	cache.Put(4, 1)
-	assert.Equal(t, -1, cache.Get(2))
-}
-
-func TestLRUCache_7(t *testing.T) {
-	cache := NewCache(2)
-	assert.Equal(t, -1, cache.Get(2))
-	cache.Put(2, 6)
-	assert.Equal(t, -1, cache.Get(1))
-	cache.Put(1, 5)
-	cache.Put(1, 2) // evicts 2->6
-	assert.Equal(t, 2, cache.Get(1))
-	assert.Equal(t, 6, cache.Get(2))
-}
-
-func TestLRUCache_8(t *testing.T) {
-	cache := NewCache(3)
-	cache.Put(1, 1)
-	cache.Put(2, 2)
-	cache.Put(3, 3)
-	cache.Put(4, 4)
-	assert.Equal(t, 4, cache.Get(4))
-	assert.Equal(t, 3, cache.Get(3))
-	assert.Equal(t, 2, cache.Get(2))
-	assert.Equal(t, -1, cache.Get(1))
-	cache.Put(5, 5)
-	assert.Equal(t, -1, cache.Get(1))
-	assert.Equal(t, 2, cache.Get(2))
-	assert.Equal(t, 3, cache.Get(3))
-	assert.Equal(t, -1, cache.Get(4))
-	assert.Equal(t, 5, cache.Get(5))
+			for i, op := range tt.operations {
+				switch op {
+				case "Put":
+					cache.Put(tt.opArgs[i][0], tt.opArgs[i][1])
+				case "Get":
+					assert.Equal(t, tt.opArgs[i][1], cache.Get(tt.opArgs[i][0]))
+				}
+			}
+		})
+	}
 }

@@ -1,7 +1,10 @@
-// package lru provides a thread-safe least recently used (LRU) cache with a fixed size.
+// package lru provides a thread-safe least recently used
+// (LRU) cache with a fixed capacity.
 package lru
 
-// LRUCache is a thread-safe least recently used (LRU) cache with a fixed size.
+import "errors"
+
+// LRUCache is a thread-safe least recently used (LRU) cache with a fixed capacity.
 type LRUCache struct {
 	capacity int
 	load     int
@@ -22,11 +25,15 @@ type lruNode struct {
 }
 
 // NewCache returns a new LRUCache with the given capacity.
-func NewCache(capacity int) LRUCache {
-	return LRUCache{
+func NewCache(capacity int) (*LRUCache, error) {
+	if capacity < 1 {
+		return nil, errors.New("capacity must be greater than 0")
+	}
+
+	return &LRUCache{
 		capacity: capacity,
 		keyMap:   make(map[int]*lruNode),
-	}
+	}, nil
 }
 
 // Put inserts a key/value pair into the cache.
