@@ -27,7 +27,7 @@ type lruNode struct {
 	prev  *lruNode
 	next  *lruNode
 	value interface{}
-	// store the key to reverse lookup entry in map during eviction
+	// store the key to reverse lookup entry in keyMap during eviction
 	key interface{}
 }
 
