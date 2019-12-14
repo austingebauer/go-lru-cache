@@ -31,7 +31,7 @@ Please see the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) 
 additional API documentation of the library.
 
 ```go
-// Basic example usage
+// Example usage
 cache, err := lru.NewCache(2, nil)
 
 cache.Put(1, 2)
