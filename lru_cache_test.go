@@ -40,7 +40,7 @@ func TestNewCache(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cache, err := NewCache(tt.args.capacity)
+			cache, err := NewCache(tt.args.capacity, nil)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -249,7 +249,7 @@ func TestLRUCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cache, err := NewCache(tt.args.capacity)
+			cache, err := NewCache(tt.args.capacity, nil)
 			assert.NoError(t, err)
 			assert.NotNil(t, cache)
 
@@ -274,4 +274,19 @@ func TestLRUCache(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCacheEvictionFunction(t *testing.T) {
+	keyValueSum := -1
+	evictionFunc := func(key, value interface{}) {
+		keyValueSum = key.(int) + value.(int)
+	}
+
+	cache, err := NewCache(1, evictionFunc)
+	assert.NoError(t, err)
+	cache.Put(11, 12)
+	cache.Put(2, 1) // evicts 1->1
+
+	// assert evictionFunc is called and sets value
+	assert.Equal(t, 23, keyValueSum)
 }

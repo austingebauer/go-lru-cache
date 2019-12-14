@@ -9,10 +9,11 @@ import (
 
 // Cache is a thread-safe least recently used (LRU) cache with a fixed capacity.
 type Cache struct {
-	capacity int
-	load     int
-	keyMap   map[interface{}]*lruNode
-	lock     sync.RWMutex
+	capacity  int
+	load      int
+	keyMap    map[interface{}]*lruNode
+	lock      sync.RWMutex
+	onEvicted func(key, value interface{})
 
 	// font is always the latest used
 	front *lruNode
@@ -25,20 +26,24 @@ type Cache struct {
 type lruNode struct {
 	prev  *lruNode
 	next  *lruNode
-	key   interface{}
 	value interface{}
+	// store the key to reverse lookup entry in map during eviction
+	key interface{}
 }
 
-// NewCache returns a new LRU Cache with the given capacity.
-func NewCache(capacity int) (*Cache, error) {
+// NewCache returns a new LRU Cache with the given capacity and eviction function.
+// When the Cache evicts a key/value pair, the passed eviction function will be
+// called with the evicted key/value pair as its arguments.
+func NewCache(capacity int, onEvicted func(key, value interface{})) (*Cache, error) {
 	if capacity < 1 {
 		return nil, errors.New("capacity must be greater than 0")
 	}
 
 	return &Cache{
-		capacity: capacity,
-		keyMap:   make(map[interface{}]*lruNode),
-		lock:     sync.RWMutex{},
+		capacity:  capacity,
+		keyMap:    make(map[interface{}]*lruNode),
+		lock:      sync.RWMutex{},
+		onEvicted: onEvicted,
 	}, nil
 }
 
@@ -75,11 +80,15 @@ func (cache *Cache) Put(key, value interface{}) {
 	}
 
 	// load is equal to capacity, so need to evict the LRU
-	evicted := cache.keyMap[cache.rear.key]
 	delete(cache.keyMap, cache.rear.key)
 
+	// call eviction function supplied in cache construction
+	if cache.onEvicted != nil {
+		cache.onEvicted(cache.rear.key, cache.rear.value)
+	}
+
 	// a single node is to be evicted
-	if evicted.next == nil && evicted.prev == nil {
+	if cache.rear.next == nil && cache.rear.prev == nil {
 		cache.front = node
 		cache.rear = node
 		return
