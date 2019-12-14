@@ -31,6 +31,7 @@ Please see the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) 
 additional API documentation of the library.
 
 ```go
+// Basic example usage
 cache, err := lru.NewCache(2, nil)
 
 cache.Put(1, 2)
@@ -42,6 +43,22 @@ cache.Put(4, 5)    // evicts 1->2
 cache.Get(1)       // returns -1 (not found)
 cache.Get(3)       // returns 4
 cache.Get(4)       // returns 5
+```
+
+```go
+// Example usage showing onEvict() function passed into NewCache()
+keyVal := ""
+onEvict := func(key, value interface{}) {
+    keyVal = key.(string) + value.(string)
+}
+
+cache, err := NewCache(1, onEvict)
+cache.Put("ada", "lovelace")
+cache.Put("linus", "torvalds") // evicts ada->lovelace
+
+// Eviction happened on ada->lovelace, thereby calling onEvict()
+// So, printing keyVal will print "adalovelace"
+fmt.Println(keyVal)
 ```
 
 ### Behavior

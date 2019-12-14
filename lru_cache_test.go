@@ -277,16 +277,16 @@ func TestLRUCache(t *testing.T) {
 }
 
 func TestCacheEvictionFunction(t *testing.T) {
-	keyValueSum := -1
-	evictionFunc := func(key, value interface{}) {
-		keyValueSum = key.(int) + value.(int)
+	keyVal := ""
+	onEvict := func(key, value interface{}) {
+		keyVal = key.(string) + value.(string)
 	}
 
-	cache, err := NewCache(1, evictionFunc)
+	cache, err := NewCache(1, onEvict)
 	assert.NoError(t, err)
-	cache.Put(11, 12)
-	cache.Put(2, 1) // evicts 1->1
+	cache.Put("ada", "lovelace")
+	cache.Put("linus", "torvalds") // evicts ada->lovelace
 
-	// assert evictionFunc is called and sets value
-	assert.Equal(t, 23, keyValueSum)
+	// Eviction happened on ada->lovelace, thereby calling onEvict()
+	assert.Equal(t, "adalovelace", keyVal)
 }
