@@ -1,4 +1,4 @@
-// package lru provides a thread-safe least recently used
+// Package lru provides a thread-safe least recently used
 // (LRU) cache with a fixed capacity.
 package lru
 
