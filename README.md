@@ -27,11 +27,11 @@ It provides a `Put()` function that allows you to place key/value pairs into the
 
 It provides a `Get()` function that allows you to retrieve values given a key.
 
-Please refer to the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for additional API 
-documentation of the library.
+Please see the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for 
+additional API documentation of the library.
 
 ```go
-cache := lru.NewCache(2)
+cache, err := lru.NewCache(2, nil)
 
 cache.Put(1, 2)
 cache.Put(2, 3)
@@ -46,10 +46,13 @@ cache.Get(4)       // returns 5
 
 ### Behavior
 
-`go-lru-cache` will begin to evict the least recently used key/value pair when it has reached
-its given capacity.
+`go-lru-cache` will begin to evict the least recently used key/value pair when it has 
+reached its given capacity.
 
-Calls to both `Get()` and `Put()` count as usage of a given key/value pair. 
+Calls to both `Get()` and `Put()` count as usage of a given key/value pair.
+
+If an `onEvicted` function has been passed into `NewCache()` during construction, then 
+the function will be called with the evicted key/value pair every time an eviction occurs.
 
 ## Contributing
 
