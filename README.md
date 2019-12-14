@@ -30,8 +30,8 @@ It provides a `Get()` function that allows you to retrieve values given a key.
 Please see the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for 
 additional API documentation of the library.
 
+**Example 1**: Basic usage
 ```go
-// Example usage
 cache, err := lru.NewCache(2, nil)
 
 cache.Put(1, 2)
@@ -45,8 +45,8 @@ cache.Get(3)       // returns 4
 cache.Get(4)       // returns 5
 ```
 
+**Example 2**: Usage showing `onEvict()` function passed into `NewCache()`
 ```go
-// Example usage showing onEvict() function passed into NewCache()
 keyVal := ""
 onEvict := func(key, value interface{}) {
     keyVal = key.(string) + value.(string)
