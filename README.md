@@ -1,6 +1,7 @@
 # go-lru-cache [![GoReportCard](https://goreportcard.com/badge/github.com/austingebauer/go-lru-cache)](https://goreportcard.com/report/github.com/austingebauer/go-lru-cache) [![GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache?status.svg)](https://godoc.org/github.com/austingebauer/go-lru-cache)
 
-A Go library that provides a thread-safe least recently used (LRU) cache with a fixed size. 
+A Go library that provides a thread-safe least recently used (LRU) cache with a fixed 
+capacity.
 
 ## Installation
 

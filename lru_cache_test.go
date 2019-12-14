@@ -12,7 +12,7 @@ func TestNewCache(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *LRUCache
+		want    *Cache
 		wantErr bool
 	}{
 		{
@@ -20,10 +20,10 @@ func TestNewCache(t *testing.T) {
 			args: args{
 				capacity: 1,
 			},
-			want: &LRUCache{
+			want: &Cache{
 				capacity: 1,
 				load:     0,
-				keyMap:   make(map[int]*lruNode),
+				keyMap:   make(map[interface{}]*lruNode),
 				front:    nil,
 				rear:     nil,
 			},
@@ -258,7 +258,18 @@ func TestLRUCache(t *testing.T) {
 				case "Put":
 					cache.Put(tt.opArgs[i][0], tt.opArgs[i][1])
 				case "Get":
-					assert.Equal(t, tt.opArgs[i][1], cache.Get(tt.opArgs[i][0]))
+					value, ok := cache.Get(tt.opArgs[i][0])
+
+					// if the k/v pair is not in the cache, assert that
+					// Get() returned return nil, false
+					if tt.opArgs[i][1] == -1 {
+						assert.Nil(t, value)
+						assert.False(t, ok)
+					} else {
+						// otherwise, assert that the correct
+						// value is returned for the key
+						assert.Equal(t, tt.opArgs[i][1], value)
+					}
 				}
 			}
 		})

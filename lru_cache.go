@@ -2,13 +2,17 @@
 // (LRU) cache with a fixed capacity.
 package lru
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
-// LRUCache is a thread-safe least recently used (LRU) cache with a fixed capacity.
-type LRUCache struct {
+// Cache is a thread-safe least recently used (LRU) cache with a fixed capacity.
+type Cache struct {
 	capacity int
 	load     int
-	keyMap   map[int]*lruNode
+	keyMap   map[interface{}]*lruNode
+	lock     sync.RWMutex
 
 	// font is always the latest used
 	front *lruNode
@@ -16,29 +20,34 @@ type LRUCache struct {
 	rear *lruNode
 }
 
-// lruNode represents a single node in a doubly-linked list.
+// lruNode represents a single node in a doubly-linked
+// list that's used by the Cache internally.
 type lruNode struct {
 	prev  *lruNode
 	next  *lruNode
-	key   int
-	value int
+	key   interface{}
+	value interface{}
 }
 
-// NewCache returns a new LRUCache with the given capacity.
-func NewCache(capacity int) (*LRUCache, error) {
+// NewCache returns a new LRU Cache with the given capacity.
+func NewCache(capacity int) (*Cache, error) {
 	if capacity < 1 {
 		return nil, errors.New("capacity must be greater than 0")
 	}
 
-	return &LRUCache{
+	return &Cache{
 		capacity: capacity,
-		keyMap:   make(map[int]*lruNode),
+		keyMap:   make(map[interface{}]*lruNode),
+		lock:     sync.RWMutex{},
 	}, nil
 }
 
 // Put inserts a key/value pair into the cache.
 // If a value for the given key already exists in the cache, it will be overridden.
-func (cache *LRUCache) Put(key int, value int) {
+func (cache *Cache) Put(key, value interface{}) {
+	cache.lock.Lock()
+	defer cache.lock.Unlock()
+
 	existingNode, ok := cache.keyMap[key]
 	if ok {
 		existingNode.value = value
@@ -82,25 +91,28 @@ func (cache *LRUCache) Put(key int, value int) {
 }
 
 // Get returns the value stored in the cache for the given key.
-// If there is no value cached for the given key, then -1 is returned.
-func (cache *LRUCache) Get(key int) int {
+// If there is no value cached for the given key, then nil, false is returned.
+func (cache *Cache) Get(key int) (interface{}, bool) {
+	cache.lock.Lock()
+	defer cache.lock.Unlock()
+
 	node, ok := cache.keyMap[key]
 	if !ok {
-		return -1
+		return nil, false
 	}
 
 	// if node is at the front of the list or is the only node in the list
 	if cache.front == node || (node.prev == nil && node.next == nil) {
-		return node.value
+		return node.value, true
 	}
 
 	cache.bringNodeToFront(node)
-	return node.value
+	return node.value, true
 }
 
 // insertInFront inserts the passed node into the front of the list
 // used by the cache to track the usage of items in the cache.
-func (cache *LRUCache) insertInFront(node *lruNode) {
+func (cache *Cache) insertInFront(node *lruNode) {
 	cache.front.prev = node
 	node.next = cache.front
 	cache.front = node
@@ -108,7 +120,7 @@ func (cache *LRUCache) insertInFront(node *lruNode) {
 
 // bringNodeToFront brings a node in the list used by the cache to
 // track the usage of items in the cache to the front of the list.
-func (cache *LRUCache) bringNodeToFront(node *lruNode) {
+func (cache *Cache) bringNodeToFront(node *lruNode) {
 	if node == cache.front {
 		return
 	}
