@@ -49,14 +49,14 @@ func NewCache(capacity int, onEvicted func(key, value interface{})) (*Cache, err
 
 // Put inserts a key/value pair into the cache.
 // If a value for the given key already exists in the cache, it will be overridden.
-func (cache *Cache) Put(key, value interface{}) {
-	cache.lock.Lock()
-	defer cache.lock.Unlock()
+func (c *Cache) Put(key, value interface{}) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	existingNode, ok := cache.keyMap[key]
+	existingNode, ok := c.keyMap[key]
 	if ok {
 		existingNode.value = value
-		cache.bringNodeToFront(existingNode)
+		c.bringNodeToFront(existingNode)
 		return
 	}
 
@@ -64,107 +64,107 @@ func (cache *Cache) Put(key, value interface{}) {
 		key:   key,
 		value: value,
 	}
-	cache.keyMap[key] = node
+	c.keyMap[key] = node
 
 	// no need to evict, so place in front of list
-	if cache.load < cache.capacity {
-		if cache.front == nil && cache.rear == nil {
-			cache.front = node
-			cache.rear = node
+	if c.load < c.capacity {
+		if c.front == nil && c.rear == nil {
+			c.front = node
+			c.rear = node
 		} else {
-			cache.insertInFront(node)
+			c.insertInFront(node)
 		}
 
-		cache.load = cache.load + 1
+		c.load = c.load + 1
 		return
 	}
 
 	// load is equal to capacity, so need to evict the LRU
-	delete(cache.keyMap, cache.rear.key)
+	delete(c.keyMap, c.rear.key)
 
 	// call eviction function supplied in cache construction
-	if cache.onEvicted != nil {
-		cache.onEvicted(cache.rear.key, cache.rear.value)
+	if c.onEvicted != nil {
+		c.onEvicted(c.rear.key, c.rear.value)
 	}
 
 	// a single node is to be evicted
-	if cache.rear.next == nil && cache.rear.prev == nil {
-		cache.front = node
-		cache.rear = node
+	if c.rear.next == nil && c.rear.prev == nil {
+		c.front = node
+		c.rear = node
 		return
 	}
 
-	cache.rear = cache.rear.prev
-	cache.rear.next = nil
-	cache.insertInFront(node)
+	c.rear = c.rear.prev
+	c.rear.next = nil
+	c.insertInFront(node)
 }
 
 // Get returns the value stored in the cache for the given key.
 // If there is no value cached for the given key, then nil, false is returned.
-func (cache *Cache) Get(key int) (interface{}, bool) {
-	cache.lock.Lock()
-	defer cache.lock.Unlock()
+func (c *Cache) Get(key int) (interface{}, bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	node, ok := cache.keyMap[key]
+	node, ok := c.keyMap[key]
 	if !ok {
 		return nil, false
 	}
 
 	// if node is at the front of the list or is the only node in the list
-	if cache.front == node || (node.prev == nil && node.next == nil) {
+	if c.front == node || (node.prev == nil && node.next == nil) {
 		return node.value, true
 	}
 
-	cache.bringNodeToFront(node)
+	c.bringNodeToFront(node)
 	return node.value, true
 }
 
 // insertInFront inserts the passed node into the front of the list
 // used by the cache to track the usage of items in the cache.
-func (cache *Cache) insertInFront(node *lruNode) {
-	cache.front.prev = node
-	node.next = cache.front
-	cache.front = node
+func (c *Cache) insertInFront(node *lruNode) {
+	c.front.prev = node
+	node.next = c.front
+	c.front = node
 }
 
 // Purge completely clears the cache.
 // After a call to Purge, the length of the cache is 0.
-func (cache *Cache) Purge() {
-	cache.lock.Lock()
-	defer cache.lock.Unlock()
+func (c *Cache) Purge() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
 	// call eviction function and delete each key in the cache
-	for k, v := range cache.keyMap {
-		if cache.onEvicted != nil {
-			cache.onEvicted(k, v)
+	for k, v := range c.keyMap {
+		if c.onEvicted != nil {
+			c.onEvicted(k, v)
 		}
 
-		delete(cache.keyMap, k)
+		delete(c.keyMap, k)
 	}
 
 	// reset the lru list
-	cache.front = nil
-	cache.rear = nil
+	c.front = nil
+	c.rear = nil
 
 	// reset the load
-	cache.load = 0
+	c.load = 0
 }
 
 // Len returns the number of key/value pairs that have been inserted into the cache.
-func (cache *Cache) Len() int {
-	return len(cache.keyMap)
+func (c *Cache) Len() int {
+	return len(c.keyMap)
 }
 
 // bringNodeToFront brings a node in the list used by the cache to
 // track the usage of items in the cache to the front of the list.
-func (cache *Cache) bringNodeToFront(node *lruNode) {
-	if node == cache.front {
+func (c *Cache) bringNodeToFront(node *lruNode) {
+	if node == c.front {
 		return
 	}
 
 	// node is the last in the list
 	if node.next == nil {
-		cache.rear = node.prev
+		c.rear = node.prev
 	} else {
 		// skip next prev to node prev
 		node.next.prev = node.prev
@@ -172,8 +172,8 @@ func (cache *Cache) bringNodeToFront(node *lruNode) {
 
 	// skip prev next to node next
 	node.prev.next = node.next
-	node.next = cache.front
+	node.next = c.front
 	node.prev = nil
-	cache.front.prev = node
-	cache.front = node
+	c.front.prev = node
+	c.front = node
 }
