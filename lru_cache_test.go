@@ -290,3 +290,196 @@ func TestCacheEvictionFunction(t *testing.T) {
 	// Eviction happened on ada->lovelace, thereby calling onEvict()
 	assert.Equal(t, "adalovelace", keyVal)
 }
+
+func TestCache_Len(t *testing.T) {
+	type args struct {
+		capacity int
+		puts     []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 10,
+				puts:     []int{},
+			},
+			want: 0,
+		},
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 1,
+				puts:     []int{},
+			},
+			want: 0,
+		},
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 1,
+				puts: []int{
+					2,
+				},
+			},
+			want: 1,
+		},
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 10,
+				puts: []int{
+					1,
+				},
+			},
+			want: 1,
+		},
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 10,
+				puts: []int{
+					2, 4, 6, 8,
+				},
+			},
+			want: 4,
+		},
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 10,
+				puts: []int{
+					0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+				},
+			},
+			want: 10,
+		},
+		{
+			name: "test length of cache",
+			args: args{
+				capacity: 10,
+				puts: []int{
+					0, 3, 1, 1, 4, 5, 6, 7, 8, 0,
+				},
+			},
+			want: 8,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c, err := NewCache(tt.args.capacity, nil)
+			assert.NoError(t, err)
+
+			for _, v := range tt.args.puts {
+				c.Put(v, "test")
+			}
+			assert.Equal(t, tt.want, c.Len())
+		})
+	}
+}
+
+func TestCache_Purge(t *testing.T) {
+	type args struct {
+		capacity       int
+		puts           []int
+		putsAfterPurge []int
+	}
+	tests := []struct {
+		name           string
+		args           args
+		want           int
+		wantAfterPurge int
+	}{
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       10,
+				puts:           []int{},
+				putsAfterPurge: []int{},
+			},
+			want:           0,
+			wantAfterPurge: 0,
+		},
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       1,
+				puts:           []int{1},
+				putsAfterPurge: []int{},
+			},
+			want:           0,
+			wantAfterPurge: 0,
+		},
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       1,
+				puts:           []int{1},
+				putsAfterPurge: []int{1},
+			},
+			want:           0,
+			wantAfterPurge: 1,
+		},
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       10,
+				puts:           []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+				putsAfterPurge: []int{},
+			},
+			want:           0,
+			wantAfterPurge: 0,
+		},
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       10,
+				puts:           []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+				putsAfterPurge: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+			},
+			want:           0,
+			wantAfterPurge: 10,
+		},
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       10,
+				puts:           []int{},
+				putsAfterPurge: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+			},
+			want:           0,
+			wantAfterPurge: 10,
+		},
+		{
+			name: "test purge of cache",
+			args: args{
+				capacity:       10,
+				puts:           []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+				putsAfterPurge: []int{0, 0, 2, 3, 3, 5, 6, 7, 8, 9},
+			},
+			want:           0,
+			wantAfterPurge: 8,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c, err := NewCache(tt.args.capacity, nil)
+			assert.NoError(t, err)
+
+			for _, v := range tt.args.puts {
+				c.Put(v, "test")
+			}
+			c.Purge()
+			assert.Equal(t, tt.want, c.Len())
+
+			// make puts after purge to assert cache operations still work
+			for _, v := range tt.args.putsAfterPurge {
+				c.Put(v, "test")
+			}
+			assert.Equal(t, tt.wantAfterPurge, c.Len())
+		})
+	}
+}

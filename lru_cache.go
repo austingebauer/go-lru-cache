@@ -127,6 +127,34 @@ func (cache *Cache) insertInFront(node *lruNode) {
 	cache.front = node
 }
 
+// Purge completely clears the cache.
+// After a call to Purge, the length of the cache is 0.
+func (cache *Cache) Purge() {
+	cache.lock.Lock()
+	defer cache.lock.Unlock()
+
+	// call eviction function and delete each key in the cache
+	for k, v := range cache.keyMap {
+		if cache.onEvicted != nil {
+			cache.onEvicted(k, v)
+		}
+
+		delete(cache.keyMap, k)
+	}
+
+	// reset the lru list
+	cache.front = nil
+	cache.rear = nil
+
+	// reset the load
+	cache.load = 0
+}
+
+// Len returns the number of key/value pairs that have been inserted into the cache.
+func (cache *Cache) Len() int {
+	return len(cache.keyMap)
+}
+
 // bringNodeToFront brings a node in the list used by the cache to
 // track the usage of items in the cache to the front of the list.
 func (cache *Cache) bringNodeToFront(node *lruNode) {
