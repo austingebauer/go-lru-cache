@@ -23,9 +23,13 @@ import "github.com/austingebauer/go-lru-cache"
 
 `go-lru-cache` has a simple API.
 
-It provides a `Put()` function that allows you to place key/value pairs into the cache.
+It provides a `Put()` method that allows you to place key/value pairs into the cache.
 
-It provides a `Get()` function that allows you to retrieve values given a key.
+It provides a `Get()` method that allows you to retrieve values given a key.
+
+It provides a `Purge()` method that clears the cache.
+
+It provides a `Len()` method that returns the length of the cache.
 
 Please see the [GoDoc](https://godoc.org/github.com/austingebauer/go-lru-cache) for 
 additional API documentation of the library.
